@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+    {{ super() }}
+
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/cr-1.5.2/fc-3.3.0/fh-3.1.6/r-2.2.3/sc-2.0.1/sp-1.0.1/datatables.min.css"/>
+
+{% endblock %}
+
+{% block app_content %}
+
+    <hr>
+     <form id="data_submit" action="" method="post" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.selectionfield.label }}
+        {{ form.selectionfield(class='form-control')}}
+    </div>
+
+         <button id="form_upload_btn" type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <br>
+
+    <div style="overflow: auto;width: 100%">
+        {{ table }}
+    </div>
+    <a href="/admin/data_download_json" target="blank">
+        <button id="example_download_json" type="submit" class="btn btn-primary">Export data as JSON file</button>
+    </a>
+    <a href="/admin/data_download_csv" target="blank">
+        <button id="example_download_csv" type="submit" class="btn btn-primary">Export data as .csv file</button>
+    </a>
+
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/v/bs/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-html5-1.6.1/b-print-1.6.1/cr-1.5.2/fc-3.3.0/fh-3.1.6/r-2.2.3/sc-2.0.1/sp-1.0.1/datatables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#admin_table').DataTable({
+                scrollX: true
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(function () {
+                $('#form_upload_btn').click(function (e) {
+                    e.preventDefault();
+                    var form_data = new FormData($('#data_submit')[0]);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/admin',
+                        data: form_data,
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (response) {
+                            window.location.href = '/admin'
+                        },
+                    });
+                });
+            });
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}

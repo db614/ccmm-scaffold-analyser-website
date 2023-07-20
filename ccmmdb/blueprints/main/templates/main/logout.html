@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    <hr>
+         <h3>Logout options:</h3>
+
+        <h4>Please <a href="{{ url_for('auth.revoke_access') }}">click here to logout</a></h4>
+
+{% endblock %}

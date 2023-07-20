@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    <hr>
+    <h3>Hot links:</h3>
+    <p><a href="{{ url_for('data.data') }}"> Click here to go to the submission page</a></p>{% if user %}
+    <h3>Logout options:</h3>
+        <h4>You are currently logged in as <b>{{ user }}</b>. If this is not you, please <a href="{{ url_for('auth.revoke_access') }}">click here to logout</a><</h4>
+    {% endif %}
+{% endblock %}

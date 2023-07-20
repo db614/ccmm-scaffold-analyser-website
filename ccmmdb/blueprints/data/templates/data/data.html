@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    {% if user %}
+        <h4>You are currently logged in as <b>{{ user }}</b>. If this is not you, please <a href="{{ url_for('auth.revoke_access') }}">click here to logout</a></h4>
+    {% endif %}
+    <hr>
+    <p></p>
+    <br/>
+
+    <div>
+            <p>This form is designed for submission of &#181;-CT scans of collagen scaffolds produced in the CCMM
+                group. Please input the parameters relating to the fabrication of your scan, using the codes below
+                for each parameter. If available please also attach either your ImageJ analysis file, or your CTan
+                analysis file and the associated log file. </p>
+        <table class="table table-hover">
+        <tr class="table-active">
+            <th> Parameter Name Label </th>
+            <th> Description</th>
+            <th> Parameter Option Labels </th>
+             <th> Descriptions</th>
+                </tr>
+            {% for key, value in discreteparameterspace.items() %}
+               <tr>
+                    {% if key != 'hyd_solvent' and key != 'additives' %}
+                            <th> {{ key }} </th>
+                            <td> {{ invertnames[key] }}</td>
+                       <th>
+                           {% for condition in value %}
+                            {{ condition[0]}} <br>
+                           {% endfor %} </th>
+                       <td>
+                           {% for condition in value %}
+                            {{ condition[1]}} <br>
+                           {% endfor %} </td>
+                       </tr>
+                    {% endif %}
+            {% endfor %}
+
+            </table>
+
+<table class="table table-hover">
+        <tr class="table-active">
+            <th> Numerical Parameter Label </th>
+            <th> Description</th>
+                </tr>
+            {% for solvent in discreteparameterspace['hyd_solvent'] %}
+                {% if solvent[0] != 'None' %}
+               <tr>
+                    <th> {{ solvent[0] }} </th>
+                    <td> {{ invertnames[solvent[0]] }}</td>
+               </tr>
+                {% if solvent == 'W' %}
+                <tr>
+                    <th> {{ solvent[0]+'_conc' }} </th>
+                    <td> {{ invertnames[solvent[0]+'_conc'] }}</td>
+               </tr>
+                {% endif %}
+                <tr>
+                    <th> {{ solvent[0]+'_prop' }} </th>
+                    <td> {{ invertnames[solvent[0]+'_prop'] }}</td>
+               </tr>
+                {% endif %}
+            {% endfor %}
+            {% for additive in discreteparameterspace['additives'] %}
+                {% if additive[0] != 'None' %}
+               <tr>
+                    <th> {{ additive[0] }} </th>
+                    <td> {{ invertnames[additive[0]] }}</td>
+               </tr>
+                <tr>
+                    <th> {{ additive[0]+'_conc' }} </th>
+                    <td> {{ invertnames[additive[0]+'_conc'] }}</td>
+               </tr>
+                {% endif %}
+            {% endfor %}
+            {% for value in numericalparameterspace %}
+               <tr>
+                    <th> {{ value }} </th>
+                    <td> {{ invertnames[value] }}</td>
+               </tr>
+            {% endfor %}
+            </table>
+      </div>
+    <hr>
+    <br>
+    <div>
+    <div class="col-md-1">
+    </div>
+    <div class="col-md-12">
+        <div class="col-md-12">
+            <h4><b>If you already have a json or csv file of the right format, please upload
+                it below: <br>
+        An example json and csv file can be obtained here</b> </h4>
+                <a href="/admin/example_download_json" target="blank">
+        <button id="form_download_json" type="submit" class="btn btn-primary" style="font-size : 12px;">Download example JSON file</button>
+    </a> &nbsp;
+    <a href="/admin/example_download_csv" target="blank">
+        <button id="form_download_csv" type="submit" class="btn btn-primary" style="font-size : 12px;">Download example CSV file</button>
+    </a> <br> <hr>
+        </div>
+        <div>
+        <div class="col-md-6">
+        <div class="'bs-component">
+            <form id="csvdatasubmit" action="" method="post" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.csv.label }}
+                    {{ form.csv(class='form-control-file') }}
+                    {{ form.log.label }}
+                    {{ form.log(class='form-control-file') }}
+                    <button id="form_csv_upload_btn" type="submit" class="btn btn-primary" style="font-size : 12px;">Submit CSV File</button>
+                </div>
+            </form>
+            <p></p>
+        </div>
+        </div>
+         <hr><br>
+        </div>
+        <div class="col-md-6">
+        <div class="'bs-component">
+            <form id="jsondatasubmit" action="" method="post" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.json.label }}
+                    {{ form.json(class='form-control-file') }}
+                    {{ form.log.label }}
+                    {{ form.log(class='form-control-file') }}
+                    <button id="form_json_upload_btn" type="submit" class="btn btn-primary" style="font-size : 12px;">Submit JSON File</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    <br>
+    <hr>
+    <br></div>
+    <div class="col-md-1">
+    </div>
+    <div class="col-md-1">
+    </div>
+    <div class="col-md-12">
+     <div class="row">
+        <h4 style="text-align: center"> If you would like to individually add your data, then please add your data below:</h4>
+    </div>
+        <div class="bs-component">
+            <form id="data_submit" action="" method="post" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.construct_type.label }}
+                    {{ form.construct_type(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.species.label }}
+                    {{ form.species(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.solubility.label }}
+                    {{ form.solubility(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.source.label }}
+                    {{ form.source(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.conc.label }}
+                    {{ form.conc(class='form-control') }}
+                </div>
+                <div class="form-group">
+                {% for solvent in form.hyd_solvent %}
+                    {%  set outer_loop = loop %}
+                    {% for subfield in solvent if subfield.widget.input_type != 'hidden'%}
+                        {{ solvent.hidden_tag()}}
+                        {{ subfield.label ~ ' (#' ~ outer_loop.index ~ ')'}}
+                        {{ subfield(class='form-control') }}
+                    {% endfor %}
+                {% endfor %}
+                </div>
+                <div class="form-group">
+                    {% for additive in form.additives %}
+                        {%  set outer_loop = loop %}
+                    {% for subfield in additive if subfield.widget.input_type != 'hidden'%}
+                        {{ additive.hidden_tag()}}
+                        {{ subfield.label ~ ' (#'  ~ outer_loop.index ~ ')'}}
+                        {{ subfield(class='form-control') }}
+                    {% endfor %}
+                {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.dialysis.label }}
+                    {{ form.dialysis(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.blending.label }}
+                    {{ form.blending(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mould_type.label }}
+                    {{ form.mould_type(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mould_area.label }}
+                    {{ form.mould_area(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mould_fillheight.label }}
+                    {{ form.mould_fillheight(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.freezing_temp.label }}
+                    {{ form.freezing_temp(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.cool_rate.label }}
+                    {{ form.cool_rate(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.nucleation_temp.label }}
+                    {{ form.nucleation_temp(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.time_at_eq.label }}
+                    {{ form.time_at_eq(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.drying_temp.label }}
+                    {{ form.drying_temp(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.drying_pressure.label }}
+                    {{ form.drying_pressure(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.freeze_drier.label }}
+                    {{ form.freeze_drier(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.crosslink.label }}
+                    {{ form.crosslink(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.crosslink_conc.label }}
+                    {{ form.crosslink_conc(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.crosslink_degree.label }}
+                    {{ form.crosslink_degree(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.pore_size.label }}
+                    {{ form.pore_size(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.major_mean.label }}
+                    {{ form.major_mean(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.minor_mean.label }}
+                    {{ form.minor_mean(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.perc_diameter.label }}
+                    {{ form.perc_diameter(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.median_interconnection_diameter.label }}
+                    {{ form.median_interconnection_diameter(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mech_loading.label }}
+                    {{ form.mech_loading(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.anisotropy.label }}
+                    {{ form.anisotropy(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.field_strength.label }}
+                    {{ form.field_strength(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.pulse_width.label }}
+                    {{ form.pulse_width(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.duty_cycle.label }}
+                    {{ form.duty_cycle(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mech_loading.label }}
+                    {{ form.mech_loading(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mech_hydration.label }}
+                    {{ form.mech_hydration(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mech_temp.label }}
+                    {{ form.mech_temp(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mech_alignment.label }}
+                    {{ form.mech_alignment(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.modulus.label }}
+                    {{ form.modulus(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.failurestress.label }}
+                    {{ form.failurestress(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.failurestrain.label }}
+                    {{ form.failurestrain(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.otherinfo.label }}
+                    {{ form.otherinfo(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.publication_field.label }}
+                    {{ form.publication_field(class='form-control') }}
+                </div>
+                <div class="form-group">
+                    {{ form.log.label }}
+                    {{ form.log(class='form-control-file') }}
+                </div>
+                <div class="form-group">
+                    {{ form.imagej.label }}
+                    {{ form.imagej(class='form-control-file') }}
+                </div>
+                <div class="form-group">
+                    {{ form.ctan.label }}
+                    {{ form.ctan(class='form-control-file') }}
+                </div>
+                <div class="form-group">
+                    {{ form.mechtest.label }}
+                    {{ form.mechtest(class='form-control-file') }}
+                </div>
+                <div class="form-group">
+                    {{ form.thermocouple.label }}
+                    {{ form.thermocouple(class='form-control-file') }}
+                </div>
+                <p></p>
+                <button id="form_upload_btn" type="submit" class="btn btn-primary" style="font-size : 12px;">Submit</button>
+            </form>
+            <p></p>
+        </div>
+    </div>
+     <div class="col-md-1">
+    </div>
+
+    <!--Modal-->
+    <div class="modal" id="data_modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Submission Confirmation/ Error Message Log:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="data_final_submit" style="font-size : 12px;">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal-->
+    <div class="modal" id="csv_modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">CSV Batch Upload:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="json_modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">JSON Batch Upload:</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" style="font-size : 12px;" >Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(function () {
+                $('#form_upload_btn').click(function (e) {
+                    e.preventDefault();
+                    var form_data = new FormData($('#data_submit')[0]);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/data_upload',
+                        data: form_data,
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (data) {
+                            var new_html = '';
+                            for (const [key, value] of Object.entries(data)) {
+                                new_html += '<tr><th scope="row">' + String(key) + '</th><td>' + String(value) + '</td></tr>';
+                            }
+                            var html = '<table class="table">' + '<tbody>' + new_html + '</tbody>' + '</table>';
+                            $("#data_modal").find('.modal-body').html(html);
+                            $("#data_modal").modal('show');
+                        },
+                    });
+                });
+            });
+            $(function () {
+                $('#data_final_submit').click(function (e) {
+                    e.preventDefault();
+                    var form_data = new FormData($('#data_submit')[0]);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/index',
+                        data: form_data,
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (response) {
+                            window.location.href = '/index'
+                        },
+                    });
+                });
+            });
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                    }
+                }
+            })
+        })
+        $(document).ready(function () {
+            $(function () {
+                $('#form_csv_upload_btn').click(function (e) {
+                    e.preventDefault();
+                    var form_data = new FormData($('#csvdatasubmit')[0]);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/batch_csv_upload',
+                        data: form_data,
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (data) {
+                            var new_html = '';
+                            for (const [key, value] of Object.entries(data)) {
+                                new_html += '<tr><th scope="row">' + String(key) + '</th><td>' + String(value) + '</td></tr>';
+                            }
+                            var html = '<table class="table">' + '<tbody>' + new_html + '</tbody>' + '</table>';
+                            $("#csv_modal").find('.modal-body').html(html);
+                            $("#csv_modal").modal('show');
+                        },
+                    });
+                });
+            });
+            $(function () {
+                $('#data_final_submit').click(function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/index',
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (response) {
+                            window.location.href = '/index'
+                        },
+                    });
+                });
+            });
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                    }
+                }
+            })
+        })
+        $(document).ready(function () {
+            $(function () {
+                $('#form_json_upload_btn').click(function (e) {
+                    e.preventDefault();
+                    var form_data = new FormData($('#jsondatasubmit')[0]);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/batch_json_upload',
+                        data: form_data,
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (data) {
+                            var new_html = '';
+                            for (const [key, value] of Object.entries(data)) {
+                                new_html += '<tr><th scope="row">' + String(key) + '</th><td>' + String(value) + '</td></tr>';
+                            }
+                            var html = '<table class="table">' + '<tbody>' + new_html + '</tbody>' + '</table>';
+                            $("#json_modal").find('.modal-body').html(html);
+                            $("#json_modal").modal('show');
+                        },
+                    });
+                });
+            });
+            $(function () {
+                $('#data_final_submit').click(function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/index',
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (response) {
+                            window.location.href = '/index'
+                        },
+                    });
+                });
+            });
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}
